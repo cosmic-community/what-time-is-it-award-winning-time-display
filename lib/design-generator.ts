@@ -11,11 +11,16 @@ export function generateRandomDesign(
     return null;
   }
 
-  // Randomly select one from each category
+  // Randomly select one from each category with proper null checks
   const randomTheme = themes[Math.floor(Math.random() * themes.length)];
   const randomDisplay = displays[Math.floor(Math.random() * displays.length)];
   const randomLayout = layouts[Math.floor(Math.random() * layouts.length)];
   const randomEffect = effects[Math.floor(Math.random() * effects.length)];
+
+  // Additional safety checks to ensure we have valid objects
+  if (!randomTheme || !randomDisplay || !randomLayout || !randomEffect) {
+    return null;
+  }
 
   return {
     theme: randomTheme,
