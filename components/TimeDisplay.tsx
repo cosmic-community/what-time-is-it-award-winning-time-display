@@ -1,48 +1,37 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { DesignConfiguration, DesignData } from '@/types'
+import { DesignConfiguration, DesignTheme, TimeDisplay as TimeDisplayType, LayoutVariation, VisualEffect } from '@/types'
 import { 
-  generateRandomDesign,
   formatTime, 
   generateDynamicStyles, 
   generateTimeDisplayStyles, 
   generateLayoutStyles,
-  generateContainerStyles 
+  generateContainerStyles,
+  generateRandomDesign
 } from '@/lib/design-generator'
 
 interface TimeDisplayProps {
-  designData: DesignData
+  themes: DesignTheme[]
+  displays: TimeDisplayType[]
+  layouts: LayoutVariation[]
+  effects: VisualEffect[]
 }
 
-export default function TimeDisplay({ designData }: TimeDisplayProps) {
+export default function TimeDisplay({ themes, displays, layouts, effects }: TimeDisplayProps) {
   const [currentTime, setCurrentTime] = useState('')
-  const [config, setConfig] = useState<DesignConfiguration | null>(null)
   const [mounted, setMounted] = useState(false)
+  const [config, setConfig] = useState<DesignConfiguration | null>(null)
 
-  // Generate new random design on component mount (every page visit)
+  // Generate random design configuration on client side
   useEffect(() => {
-    const newConfig = generateRandomDesign(
-      designData.themes,
-      designData.displays,
-      designData.layouts,
-      designData.effects
-    );
-    
-    if (newConfig) {
-      setConfig(newConfig);
-      console.log('🎨 New design generated:', {
-        theme: newConfig.theme.title,
-        display: newConfig.timeDisplay.title,
-        layout: newConfig.layout.title,
-        effect: newConfig.visualEffect.title
-      });
-    }
-  }, [designData]);
+    const randomConfig = generateRandomDesign(themes, displays, layouts, effects)
+    setConfig(randomConfig)
+  }, [themes, displays, layouts, effects])
 
   // Update time every second
   useEffect(() => {
-    if (!config) return;
+    if (!config) return
 
     const updateTime = () => {
       const timeFormat = config.timeDisplay.metadata?.time_format?.key || '12hour'
@@ -59,11 +48,11 @@ export default function TimeDisplay({ designData }: TimeDisplayProps) {
     return () => clearInterval(interval)
   }, [config])
 
-  // Don't render until we have both config and mounted state
+  // Don't render until we have a config and are mounted
   if (!mounted || !config) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-6xl animate-pulse">⏰</div>
+        <div className="text-4xl animate-pulse">⏰</div>
       </div>
     )
   }
@@ -80,7 +69,7 @@ export default function TimeDisplay({ designData }: TimeDisplayProps) {
       <style jsx global>{dynamicStyles}</style>
       
       <div 
-        className="dynamic-background min-h-screen relative transition-all duration-1000"
+        className="dynamic-background min-h-screen relative"
         style={{
           background: config.theme.metadata?.background_config?.gradient || 
                      config.theme.metadata?.color_palette?.background || 
@@ -89,11 +78,11 @@ export default function TimeDisplay({ designData }: TimeDisplayProps) {
       >
         {/* Time display container with dynamic positioning */}
         <div
-          className="absolute transition-all duration-1000"
+          className="absolute"
           style={layoutStyles}
         >
           <div
-            className="time-display transition-all duration-1000"
+            className="time-display"
             style={{
               ...containerStyles,
               ...timeDisplayStyles,
@@ -110,7 +99,6 @@ export default function TimeDisplay({ designData }: TimeDisplayProps) {
             <div>Display: {config.timeDisplay.title}</div>
             <div>Layout: {config.layout.title}</div>
             <div>Effect: {config.visualEffect.title}</div>
-            <div className="mt-1 text-green-300">🔄 Refresh to see new design</div>
           </div>
         )}
       </div>
