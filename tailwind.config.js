@@ -19,6 +19,9 @@ module.exports = {
       colors: {
         'cosmic-dark': '#11171A',
         'cosmic-dark-hover': '#1a2326',
+        border: 'hsl(214.3 31.8% 91.4%)',
+        background: 'hsl(0 0% 100%)',
+        foreground: 'hsl(222.2 84% 4.9%)',
       },
     },
   },
