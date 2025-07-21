@@ -4,76 +4,143 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  body {
-    @apply bg-background text-foreground;
-  }
+/* Base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-  html,
-  body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-  }
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
 
-  #__next {
-    height: 100%;
+/* Dynamic CSS variables - will be overridden by JavaScript */
+:root {
+  --primary-color: #000000;
+  --secondary-color: #666666;
+  --accent-color: #ff0000;
+  --background-color: #ffffff;
+  --text-color: #333333;
+  --primary-font: 'Inter', 'Helvetica Neue', sans-serif;
+  --secondary-font: 'JetBrains Mono', monospace;
+  
+  /* Theme-specific variables */
+  --shadow-subtle: 0 2px 20px rgba(0,0,0,0.05);
+  --geometric-shadow: 8px 8px 0px rgba(255, 107, 53, 0.3);
+  --organic-shadow: 0 8px 32px rgba(45, 80, 22, 0.1);
+  --neon-glow: 0 0 20px currentColor, 0 0 40px currentColor;
+  
+  --border-radius: 12px;
+  --border-bold: 4px solid currentColor;
+  --border-organic: 2px solid rgba(164, 180, 148, 0.3);
+  
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bold: all 0.15s ease-in-out;
+  --transition-organic: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-cyber: all 0.2s ease-out;
+  
+  --scan-lines: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,255,0.03) 2px, rgba(0,255,255,0.03) 4px);
+}
+
+/* Animation keyframes */
+@keyframes neon-glow {
+  0% { 
+    text-shadow: 0 0 5px currentColor, 0 0 10px currentColor; 
+  }
+  50% { 
+    text-shadow: 0 0 20px currentColor, 0 0 30px currentColor, 0 0 40px currentColor; 
+  }
+  100% { 
+    text-shadow: 0 0 5px currentColor, 0 0 10px currentColor; 
   }
 }
 
-@layer components {
-  .time-display {
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
+@keyframes bold-impact {
+  0% { 
+    transform: scale(1) rotate(0deg); 
   }
-
-  .dynamic-background {
-    min-height: 100vh;
-    min-width: 100vw;
-    position: relative;
+  25% { 
+    transform: scale(1.05) rotate(0.5deg); 
   }
-
-  .cosmic-button {
-    background-color: #11171A;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 500;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: background-color 0.2s ease;
+  75% { 
+    transform: scale(0.98) rotate(-0.3deg); 
   }
-
-  .cosmic-button:hover {
-    background-color: #1a2326;
+  100% { 
+    transform: scale(1) rotate(0deg); 
   }
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+@keyframes gentle-float {
+  0% { 
+    transform: translateY(0px); 
+  }
+  33% { 
+    transform: translateY(-10px); 
+  }
+  66% { 
+    transform: translateY(5px); 
+  }
+  100% { 
+    transform: translateY(0px); 
   }
 }
 
-/* Prevent flash of unstyled content */
+@keyframes subtle-pulse {
+  0% { 
+    opacity: 0.7; 
+    transform: scale(1); 
+  }
+  50% { 
+    opacity: 1; 
+    transform: scale(1.02); 
+  }
+  100% { 
+    opacity: 0.7; 
+    transform: scale(1); 
+  }
+}
+
+/* Dynamic background patterns for cyber theme */
+.cyber-background {
+  position: relative;
+}
+
+.cyber-background::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--scan-lines);
+  pointer-events: none;
+  opacity: 0.1;
+}
+
+/* Utility classes for dynamic styling */
 .time-display {
-  opacity: 0;
-  animation: fadeIn 0.5s ease-in-out forwards;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+.dynamic-background {
+  transition: var(--transition-smooth);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .time-display {
+    padding: 1rem !important;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+}
+
+@media (max-width: 480px) {
+  .time-display {
+    padding: 0.5rem !important;
   }
 }
