@@ -57,7 +57,7 @@ export async function getAllLayoutVariations(): Promise<LayoutVariation[]> {
     if (hasStatus(error) && error.status === 404) {
       return [];
     }
-    throw new Error('Failed to fetch layout variations');
+    throw new Error('Failed to fetch visual effects');
   }
 }
 

@@ -8,37 +8,19 @@ export function generateRandomDesign(
 ): DesignConfiguration | null {
   // Ensure we have content for each type
   if (!themes.length || !displays.length || !layouts.length || !effects.length) {
-    console.warn('Missing content for random design generation:', {
-      themes: themes.length,
-      displays: displays.length,
-      layouts: layouts.length,
-      effects: effects.length
-    });
     return null;
   }
 
-  // Add randomization seed based on current timestamp for more variety
-  const seed = Date.now();
-  const random = (index: number) => Math.floor((Math.sin(seed + index) * 10000) % 1 * Math.abs(Math.cos(seed + index)) + Math.random());
-
-  // Randomly select one from each category with enhanced randomization
-  const randomTheme = themes[Math.floor(random(1) * themes.length)];
-  const randomDisplay = displays[Math.floor(random(2) * displays.length)];
-  const randomLayout = layouts[Math.floor(random(3) * layouts.length)];
-  const randomEffect = effects[Math.floor(random(4) * effects.length)];
+  // Randomly select one from each category with proper null checks
+  const randomTheme = themes[Math.floor(Math.random() * themes.length)];
+  const randomDisplay = displays[Math.floor(Math.random() * displays.length)];
+  const randomLayout = layouts[Math.floor(Math.random() * layouts.length)];
+  const randomEffect = effects[Math.floor(Math.random() * effects.length)];
 
   // Additional safety checks to ensure we have valid objects
   if (!randomTheme || !randomDisplay || !randomLayout || !randomEffect) {
-    console.error('Failed to generate random design - some objects are null');
     return null;
   }
-
-  console.log('Generated random design:', {
-    theme: randomTheme.title,
-    display: randomDisplay.title,
-    layout: randomLayout.title,
-    effect: randomEffect.title
-  });
 
   // Return with explicit type assertion to satisfy TypeScript
   return {
@@ -83,7 +65,7 @@ export function generateDynamicStyles(config: DesignConfiguration): string {
   
   let styles = '';
 
-  // Base theme colors and fonts with fallbacks
+  // Base theme colors and fonts
   if (theme.metadata?.color_palette) {
     styles += `
       :root {
@@ -107,53 +89,21 @@ export function generateDynamicStyles(config: DesignConfiguration): string {
     `;
   }
 
-  // Animation keyframes from visual effect with unique naming
+  // Animation keyframes from visual effect
   if (visualEffect.metadata?.animation_config?.keyframes) {
-    const animationName = `effect-${visualEffect.slug}-${Date.now()}`;
+    const animationName = `effect-${visualEffect.slug}`;
     styles += `
       @keyframes ${animationName} {
         ${visualEffect.metadata.animation_config.keyframes}
       }
-      
-      .time-display {
-        animation-name: ${animationName} !important;
-      }
     `;
   }
 
-  // Background styling from theme with enhanced support
+  // Background styling from theme
   if (theme.metadata?.background_config?.gradient) {
     styles += `
       .dynamic-background {
-        background: ${theme.metadata.background_config.gradient} !important;
-        background-attachment: fixed;
-      }
-    `;
-  }
-
-  // Special cyber theme effects
-  if (theme.slug === 'neon-cyber') {
-    styles += `
-      .dynamic-background {
-        position: relative;
-      }
-      
-      .dynamic-background::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: var(--scan-lines);
-        pointer-events: none;
-        opacity: 0.1;
-        z-index: 1;
-      }
-      
-      .time-display {
-        position: relative;
-        z-index: 2;
+        background: ${theme.metadata.background_config.gradient};
       }
     `;
   }
@@ -162,11 +112,11 @@ export function generateDynamicStyles(config: DesignConfiguration): string {
 }
 
 export function generateTimeDisplayStyles(config: DesignConfiguration): Record<string, any> {
-  const { theme, timeDisplay, visualEffect } = config;
+  const { theme, timeDisplay, layout, visualEffect } = config;
   
   const styles: Record<string, any> = {};
 
-  // Typography from time display with enhanced responsive support
+  // Typography from time display
   if (timeDisplay.metadata?.font_size_range) {
     styles.fontSize = timeDisplay.metadata.font_size_range;
   }
@@ -183,29 +133,25 @@ export function generateTimeDisplayStyles(config: DesignConfiguration): Record<s
     styles.textAlign = timeDisplay.metadata.text_alignment.key;
   }
 
-  // Colors from theme with CSS variable fallbacks
-  styles.color = 'var(--text-color)';
+  // Colors from theme
+  if (theme.metadata?.color_palette?.text) {
+    styles.color = theme.metadata.color_palette.text;
+  }
 
-  // Font family from theme with CSS variable fallbacks
-  styles.fontFamily = 'var(--primary-font)';
+  // Font family from theme
+  if (theme.metadata?.primary_font) {
+    styles.fontFamily = theme.metadata.primary_font;
+  }
 
-  // Enhanced animation from visual effect
+  // Animation from visual effect
   if (visualEffect.metadata?.animation_duration && visualEffect.metadata?.animation_config) {
+    const animationName = `effect-${visualEffect.slug}`;
     const duration = visualEffect.metadata.animation_duration;
     const timingFunction = visualEffect.metadata.animation_config.timingFunction || 'ease';
     const iterationCount = visualEffect.metadata.animation_config.iterationCount || '1';
     const delay = visualEffect.metadata.animation_config.delay || '0s';
     
-    styles.animationDuration = duration;
-    styles.animationTimingFunction = timingFunction;
-    styles.animationIterationCount = iterationCount;
-    styles.animationDelay = delay;
-    styles.animationFillMode = 'both';
-  }
-
-  // Special effects based on theme
-  if (theme.slug === 'neon-cyber') {
-    styles.textShadow = 'var(--neon-glow)';
+    styles.animation = `${animationName} ${duration} ${timingFunction} ${delay} ${iterationCount}`;
   }
 
   return styles;
@@ -215,60 +161,18 @@ export function generateLayoutStyles(config: DesignConfiguration): Record<string
   const { layout } = config;
   
   if (!layout.metadata?.position_config) {
-    // Fallback to center positioning
-    return {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '100vh',
-      width: '100vw',
-      top: 0,
-      left: 0,
-    };
+    return {};
   }
 
-  const styles = { ...layout.metadata.position_config };
-  
-  // Ensure responsive behavior on mobile
-  if (typeof window !== 'undefined' && window.innerWidth <= 768) {
-    const responsiveRules = layout.metadata?.responsive_rules?.mobile;
-    if (responsiveRules) {
-      Object.assign(styles, responsiveRules);
-    }
-  }
-
-  return styles;
+  return layout.metadata.position_config;
 }
 
 export function generateContainerStyles(config: DesignConfiguration): Record<string, any> {
-  const { layout, theme } = config;
+  const { layout } = config;
   
-  const styles: Record<string, any> = {};
-  
-  if (layout.metadata?.container_styling) {
-    Object.assign(styles, layout.metadata.container_styling);
+  if (!layout.metadata?.container_styling) {
+    return {};
   }
 
-  // Add theme-specific styling enhancements
-  if (theme.slug === 'bold-geometric') {
-    styles.boxShadow = 'var(--geometric-shadow)';
-  } else if (theme.slug === 'organic-flow') {
-    styles.boxShadow = 'var(--organic-shadow)';
-  } else if (theme.slug === 'minimal-zen') {
-    styles.boxShadow = 'var(--shadow-subtle)';
-  }
-
-  // Ensure proper transitions
-  styles.transition = 'var(--transition-smooth)';
-
-  return styles;
-}
-
-// Utility function to force re-randomization on page refresh
-export function seedRandomization(): void {
-  // Force browser to treat each page load as unique
-  if (typeof window !== 'undefined') {
-    const timestamp = Date.now();
-    window.history.replaceState({}, '', `${window.location.pathname}?t=${timestamp}`);
-  }
+  return layout.metadata.container_styling;
 }
