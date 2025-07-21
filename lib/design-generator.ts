@@ -22,11 +22,12 @@ export function generateRandomDesign(
     return null;
   }
 
+  // Return with explicit type assertion to satisfy TypeScript
   return {
-    theme: randomTheme,
-    timeDisplay: randomDisplay,
-    layout: randomLayout,
-    visualEffect: randomEffect
+    theme: randomTheme as DesignTheme,
+    timeDisplay: randomDisplay as TimeDisplay,
+    layout: randomLayout as LayoutVariation,
+    visualEffect: randomEffect as VisualEffect
   };
 }
 
