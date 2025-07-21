@@ -1,22 +1,15 @@
 import { getAllDesignData } from '@/lib/cosmic'
-import { generateRandomDesign } from '@/lib/design-generator'
 import TimeDisplay from '@/components/TimeDisplay'
 import Footer from '@/components/Footer'
 
 export default async function HomePage() {
   try {
-    // Fetch all design data from Cosmic
+    // Fetch all design data from Cosmic (server-side)
     const designData = await getAllDesignData();
     
-    // Generate random design configuration
-    const randomDesign = generateRandomDesign(
-      designData.themes,
-      designData.displays,
-      designData.layouts,
-      designData.effects
-    );
-
-    if (!randomDesign) {
+    // Check if we have the required content
+    if (!designData.themes.length || !designData.displays.length || 
+        !designData.layouts.length || !designData.effects.length) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100">
           <div className="text-center">
@@ -28,9 +21,10 @@ export default async function HomePage() {
       );
     }
 
+    // Pass all design data to client component for random generation
     return (
       <div className="relative">
-        <TimeDisplay config={randomDesign} />
+        <TimeDisplay designData={designData} />
         <Footer />
       </div>
     );
